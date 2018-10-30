@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-var keyFormat = flag.String("format", "go", "output format (go/hex/base64/proto)")
+var keyFormat = flag.String("format", "proto", "output format (go/hex/base64/proto)")
 
 func main() {
 	flag.Parse()
