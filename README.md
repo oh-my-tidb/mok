@@ -11,8 +11,8 @@ https://github.com/pingcap/pd
 
 ## Install
 ```
-    $ go build
-    $ sudo mv ./mok /usr/local/bin/
+    $ go get github.com/disksing/mok
+    $ go install github.com/disksing/mok
 ```
 
 ## Usage
