@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
+	"strings"
 )
 
 type Node struct {
@@ -22,7 +25,16 @@ func N(t string, v []byte) *Node {
 func (n *Node) String() string {
 	switch n.typ {
 	case "key":
-		return fmt.Sprintf("%q", n.val)
+		switch *keyFormat {
+		case "hex":
+			return `"` + strings.ToUpper(hex.EncodeToString(n.val)) + `"`
+		case "base64":
+			return `"` + base64.StdEncoding.EncodeToString(n.val) + `"`
+		case "proto":
+			return `"` + formatProto(string(n.val)) + `"`
+		default:
+			return fmt.Sprintf("%q", n.val)
+		}
 	case "table_id":
 		_, id, _ := DecodeInt(n.val)
 		return fmt.Sprintf("table: %v", id)

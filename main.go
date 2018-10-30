@@ -1,14 +1,21 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 )
 
+var keyFormat = flag.String("format", "go", "output format (go/hex/base64/proto)")
+
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Println("usage: mok {key}")
+	flag.Parse()
+
+	if flag.NArg() != 1 {
+		fmt.Println("usage:\nmok {flags} {key}")
+		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	N("key", []byte(os.Args[1])).Expand().Print()
+
+	N("key", []byte(flag.Arg(0))).Expand().Print()
 }
