@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"strconv"
-	"strings"
 )
 
 type Rule func(*Node) *Variant
@@ -16,7 +14,7 @@ var rules = []Rule{
 	DecodeTablePrefix,
 	DecodeTableRow,
 	DecodeTableIndex,
-	UnQuote,
+	DecodeLiteral,
 	DecodeBase64,
 }
 
@@ -99,19 +97,19 @@ func DecodeTableIndex(n *Node) *Variant {
 	return nil
 }
 
-func UnQuote(n *Node) *Variant {
+func DecodeLiteral(n *Node) *Variant {
 	if n.typ != "key" {
 		return nil
 	}
-	if strings.Index(string(n.val), `\`) == -1 {
-		return nil
-	}
-	s, err := strconv.Unquote(`'` + string(n.val) + `'`)
+	s, err := decodeKey(string(n.val))
 	if err != nil {
 		return nil
 	}
+	if s == string(n.val) {
+		return nil
+	}
 	return &Variant{
-		method:   "unquote",
+		method:   "literal",
 		children: []*Node{N("key", []byte(s))},
 	}
 }
