@@ -2,8 +2,11 @@
 mok: master of keys
 
 A tool for decoding keys for TiDB projects.
+
 https://github.com/pingcap/tidb
+
 https://github.com/tikv/tikv
+
 https://github.com/pingcap/pd
 
 ## Install
@@ -32,8 +35,8 @@ $ mok 7A7480000000000007FF8F5F728000000000FF083BBA0000000000FAFA6C400A6673FFFE
 
 ## TODO
 
-[ ] build keys
-[ ] setting output format of keys
-[ ] decode tidb meta keys
-[ ] decode index values
-[ ] support url format
+- [ ] build keys
+- [ ] setting output format of keys
+- [ ] decode tidb meta keys
+- [ ] decode index values
+- [ ] support url format
