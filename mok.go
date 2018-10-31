@@ -5,10 +5,13 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strings"
+
+	"github.com/pingcap/tidb/store/tikv/oracle"
+	"github.com/pingcap/tidb/util/codec"
 )
 
 type Node struct {
-	typ      string // "key", "table_id", "row_id", "index_id", "ts"
+	typ      string // "key", "table_id", "row_id", "index_id", "index_values", "index_value", "ts"
 	val      []byte
 	variants []*Variant
 }
@@ -24,7 +27,7 @@ func N(t string, v []byte) *Node {
 
 func (n *Node) String() string {
 	switch n.typ {
-	case "key":
+	case "key", "index_values":
 		switch *keyFormat {
 		case "hex":
 			return `"` + strings.ToUpper(hex.EncodeToString(n.val)) + `"`
@@ -36,17 +39,21 @@ func (n *Node) String() string {
 			return fmt.Sprintf("%q", n.val)
 		}
 	case "table_id":
-		_, id, _ := DecodeInt(n.val)
+		_, id, _ := codec.DecodeInt(n.val)
 		return fmt.Sprintf("table: %v", id)
 	case "row_id":
-		_, id, _ := DecodeInt(n.val)
+		_, id, _ := codec.DecodeInt(n.val)
 		return fmt.Sprintf("row: %v", id)
 	case "index_id":
-		_, id, _ := DecodeInt(n.val)
+		_, id, _ := codec.DecodeInt(n.val)
 		return fmt.Sprintf("index: %v", id)
+	case "index_value":
+		_, d, _ := codec.DecodeOne(n.val)
+		s, _ := d.ToString()
+		return fmt.Sprintf("kind: %v, value: %v", indexTypeToString[d.Kind()], s)
 	case "ts":
-		_, ts, _ := DecodeUintDesc(n.val)
-		return fmt.Sprintf("ts: %v (%v)", ts, GetTimeFromTS(uint64(ts)))
+		_, ts, _ := codec.DecodeUintDesc(n.val)
+		return fmt.Sprintf("ts: %v (%v)", ts, oracle.GetTimeFromTS(uint64(ts)))
 	}
 	return fmt.Sprintf("%v:%q", n.typ, n.val)
 }
@@ -80,7 +87,7 @@ func (n *Node) PrintIndent(indent string, last bool) {
 
 func (v *Variant) PrintIndent(indent string, last bool) {
 	indent = printIndent(indent, last)
-	fmt.Println(v.method)
+	fmt.Printf("## %s\n", v.method)
 	for i, c := range v.children {
 		c.PrintIndent(indent, i == len(v.children)-1)
 	}

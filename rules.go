@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/base64"
 	"encoding/hex"
+
+	"github.com/pingcap/tidb/util/codec"
 )
 
 type Rule func(*Node) *Variant
@@ -14,6 +16,7 @@ var rules = []Rule{
 	DecodeTablePrefix,
 	DecodeTableRow,
 	DecodeTableIndex,
+	DecodeIndexValues,
 	DecodeLiteral,
 	DecodeBase64,
 }
@@ -27,7 +30,7 @@ func DecodeHex(n *Node) *Variant {
 		return nil
 	}
 	return &Variant{
-		method:   "hex",
+		method:   "decode hex key",
 		children: []*Node{N("key", decoded)},
 	}
 }
@@ -36,7 +39,7 @@ func DecodeComparableKey(n *Node) *Variant {
 	if n.typ != "key" {
 		return nil
 	}
-	b, decoded, err := DecodeBytes(n.val, nil)
+	b, decoded, err := codec.DecodeBytes(n.val, nil)
 	if err != nil {
 		return nil
 	}
@@ -49,7 +52,7 @@ func DecodeComparableKey(n *Node) *Variant {
 		return nil
 	}
 	return &Variant{
-		method:   "comparable",
+		method:   "decode mvcc key",
 		children: children,
 	}
 }
@@ -60,7 +63,7 @@ func DecodeRocksDBKey(n *Node) *Variant {
 	}
 	if len(n.val) > 0 && n.val[0] == 'z' {
 		return &Variant{
-			method:   "rocksdb",
+			method:   "decode rocksdb data key",
 			children: []*Node{N("key", n.val[1:])},
 		}
 	}
@@ -70,7 +73,7 @@ func DecodeRocksDBKey(n *Node) *Variant {
 func DecodeTablePrefix(n *Node) *Variant {
 	if n.typ == "key" && len(n.val) == 9 && n.val[0] == 't' {
 		return &Variant{
-			method:   "table_prefix",
+			method:   "table prefix",
 			children: []*Node{N("table_id", n.val[1:])},
 		}
 	}
@@ -80,7 +83,7 @@ func DecodeTablePrefix(n *Node) *Variant {
 func DecodeTableRow(n *Node) *Variant {
 	if n.typ == "key" && len(n.val) == 19 && n.val[0] == 't' && n.val[9] == '_' && n.val[10] == 'r' {
 		return &Variant{
-			method:   "rowkey",
+			method:   "table row key",
 			children: []*Node{N("table_id", n.val[1:9]), N("row_id", n.val[11:])},
 		}
 	}
@@ -90,11 +93,32 @@ func DecodeTableRow(n *Node) *Variant {
 func DecodeTableIndex(n *Node) *Variant {
 	if n.typ == "key" && len(n.val) >= 19 && n.val[0] == 't' && n.val[9] == '_' && n.val[10] == 'i' {
 		return &Variant{
-			method:   "indexkey",
-			children: []*Node{N("table_id", n.val[1:9]), N("index_id", n.val[11:19])},
+			method:   "table index key",
+			children: []*Node{N("table_id", n.val[1:9]), N("index_id", n.val[11:19]), N("index_values", n.val[19:])},
 		}
 	}
 	return nil
+}
+
+func DecodeIndexValues(n *Node) *Variant {
+	if n.typ != "index_values" {
+		return nil
+	}
+	var children []*Node
+	for key := n.val; len(key) > 0; {
+		remain, _, e := codec.DecodeOne(key)
+		if e != nil {
+			children = append(children, N("key", key))
+			break
+		} else {
+			children = append(children, N("index_value", key[:len(key)-len(remain)]))
+		}
+		key = remain
+	}
+	return &Variant{
+		method:   "decode index values",
+		children: children,
+	}
 }
 
 func DecodeLiteral(n *Node) *Variant {
@@ -109,7 +133,7 @@ func DecodeLiteral(n *Node) *Variant {
 		return nil
 	}
 	return &Variant{
-		method:   "literal",
+		method:   "decode go literal key",
 		children: []*Node{N("key", []byte(s))},
 	}
 }
@@ -123,7 +147,7 @@ func DecodeBase64(n *Node) *Variant {
 		return nil
 	}
 	return &Variant{
-		method:   "base64",
+		method:   "decode base64 key",
 		children: []*Node{N("key", []byte(s))},
 	}
 }
