@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strings"
 )
 
 func decodeKey(text string) (string, error) {
@@ -22,19 +23,16 @@ func decodeKey(text string) (string, error) {
 			continue
 		}
 		n := r.Next(1)
+		if len(n) == 0 {
+			return "", io.EOF
+		}
+		// See: https://golang.org/ref/spec#Rune_literals
+		if idx := strings.IndexByte(`abfnrtv\'"`, n[0]); idx != -1 {
+			buf = append(buf, []byte("\a\b\f\n\r\t\v\\'\"")[idx])
+			continue
+		}
+
 		switch n[0] {
-		case '"':
-			buf = append(buf, '"')
-		case '\'':
-			buf = append(buf, '\'')
-		case '\\':
-			buf = append(buf, '\\')
-		case 'n':
-			buf = append(buf, '\n')
-		case 't':
-			buf = append(buf, '\t')
-		case 'r':
-			buf = append(buf, '\r')
 		case 'x':
 			fmt.Sscanf(string(r.Next(2)), "%02x", &c)
 			buf = append(buf, c)
