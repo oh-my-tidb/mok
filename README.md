@@ -39,4 +39,3 @@ $ mok 7A7480000000000007FF8F5F728000000000FF083BBA0000000000FAFA6C400A6673FFFE
 - [x] setting output format of keys
 - [ ] decode tidb meta keys
 - [x] decode index values
-- [ ] support url format
