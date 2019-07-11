@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"strconv"
+	"strings"
 
 	"github.com/pingcap/tidb/util/codec"
 )
@@ -19,6 +21,7 @@ var rules = []Rule{
 	DecodeIndexValues,
 	DecodeLiteral,
 	DecodeBase64,
+	DecodeIntegerBytes,
 }
 
 func DecodeHex(n *Node) *Variant {
@@ -149,5 +152,24 @@ func DecodeBase64(n *Node) *Variant {
 	return &Variant{
 		method:   "decode base64 key",
 		children: []*Node{N("key", []byte(s))},
+	}
+}
+
+func DecodeIntegerBytes(n *Node) *Variant {
+	if n.typ != "key" {
+		return nil
+	}
+	fields := strings.Fields(strings.ReplaceAll(strings.Trim(string(n.val), "[]"), ",", ""))
+	var b []byte
+	for _, f := range fields {
+		c, err := strconv.ParseInt(f, 10, 9)
+		if err != nil {
+			return nil
+		}
+		b = append(b, byte(c))
+	}
+	return &Variant{
+		method:   "decode integer bytes",
+		children: []*Node{N("key", b)},
 	}
 }
