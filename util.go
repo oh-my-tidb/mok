@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 )
 
 func decodeKey(text string) (string, error) {
@@ -68,4 +69,10 @@ var indexTypeToString = map[byte]string{
 	16: "MaxValue",
 	17: "Raw",
 	18: "MysqlJSON",
+}
+
+// GetTimeFromTS extracts time.Time from a timestamp.
+func GetTimeFromTS(ts uint64) time.Time {
+	ms := int64(ts >> 18)
+	return time.Unix(ms/1e3, (ms%1e3)*1e6)
 }

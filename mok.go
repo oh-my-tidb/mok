@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pingcap/tidb/store/tikv/oracle"
 	"github.com/pingcap/tidb/util/codec"
 )
 
@@ -53,7 +52,7 @@ func (n *Node) String() string {
 		return fmt.Sprintf("kind: %v, value: %v", indexTypeToString[d.Kind()], s)
 	case "ts":
 		_, ts, _ := codec.DecodeUintDesc(n.val)
-		return fmt.Sprintf("ts: %v (%v)", ts, oracle.GetTimeFromTS(uint64(ts)))
+		return fmt.Sprintf("ts: %v (%v)", ts, GetTimeFromTS(uint64(ts)))
 	}
 	return fmt.Sprintf("%v:%q", n.typ, n.val)
 }
