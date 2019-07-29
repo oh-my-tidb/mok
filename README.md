@@ -10,9 +10,20 @@ https://github.com/tikv/tikv
 https://github.com/pingcap/pd
 
 ## Install
+
+Download the [latest release](https://github.com/disksing/mok/releases) then unzip the binary to your PATH:
+
 ```
-    $ go get github.com/disksing/mok
-    $ go install github.com/disksing/mok
+    $ unzip mok-vX.X-OS-ARCH.zip
+    $ move mok-vX.X-OS-ARCH/mok /usr/local/bin/
+```
+
+You can also manually build it by yourself:
+
+```
+    $ git clone https://github.com/disksing/mok.git
+    $ cd mok
+    $ GO111MODULE=on go build -o /usr/local/bin/mok
 ```
 
 ## Usage
@@ -36,6 +47,4 @@ $ mok 7A7480000000000007FF8F5F728000000000FF083BBA0000000000FAFA6C400A6673FFFE
 ## TODO
 
 - [ ] build keys
-- [x] setting output format of keys
 - [ ] decode tidb meta keys
-- [x] decode index values
