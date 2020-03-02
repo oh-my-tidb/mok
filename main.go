@@ -32,13 +32,15 @@ func main() {
 		}
 
 		if *indexID == 0 {
-			key = append(key, []byte("_r")...)
-			rowValueInt, err := strconv.ParseInt(*rowValue, 10, 64)
-			if err != nil {
-				fmt.Printf("invalid row value: %s\n", *rowValue)
-				os.Exit(1)
+			if *rowValue != "" {
+				key = append(key, []byte("_r")...)
+				rowValueInt, err := strconv.ParseInt(*rowValue, 10, 64)
+				if err != nil {
+					fmt.Printf("invalid row value: %s\n", *rowValue)
+					os.Exit(1)
+				}
+				key = codec.EncodeInt(key, rowValueInt)
 			}
-			key = codec.EncodeInt(key, rowValueInt)
 		} else {
 			key = append(key, []byte("_i")...)
 			key = codec.EncodeInt(key, *indexID)
