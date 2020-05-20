@@ -44,12 +44,14 @@ func main() {
 		} else {
 			key = append(key, []byte("_i")...)
 			key = codec.EncodeInt(key, *indexID)
-			indexValueInt, err := strconv.ParseInt(*indexValue, 10, 64)
-			if err != nil {
-				fmt.Printf("invalid index value: %s\n", *indexValue)
-				os.Exit(1)
+			if *indexValue != "" {
+				indexValueInt, err := strconv.ParseInt(*indexValue, 10, 64)
+				if err != nil {
+					fmt.Printf("invalid index value: %s\n", *indexValue)
+					os.Exit(1)
+					key = codec.EncodeInt(key, indexValueInt)
+				}
 			}
-			key = codec.EncodeInt(key, indexValueInt)
 		}
 
 		key = codec.EncodeBytes([]byte{}, key)
