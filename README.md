@@ -15,7 +15,7 @@ Download the [latest release](https://github.com/disksing/mok/releases) then unz
 
 ```
     $ unzip mok-vX.X-OS-ARCH.zip
-    $ move mok-vX.X-OS-ARCH/mok /usr/local/bin/
+    $ mv mok-vX.X-OS-ARCH/mok /usr/local/bin/
 ```
 
 You can also manually build it by yourself:
