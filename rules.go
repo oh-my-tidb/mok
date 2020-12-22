@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -22,6 +23,7 @@ var rules = []Rule{
 	DecodeLiteral,
 	DecodeBase64,
 	DecodeIntegerBytes,
+	DecodeURLEscaped,
 }
 
 func DecodeHex(n *Node) *Variant {
@@ -171,5 +173,19 @@ func DecodeIntegerBytes(n *Node) *Variant {
 	return &Variant{
 		method:   "decode integer bytes",
 		children: []*Node{N("key", b)},
+	}
+}
+
+func DecodeURLEscaped(n *Node) *Variant {
+	if n.typ != "key" {
+		return nil
+	}
+	s, err := url.PathUnescape(string(n.val))
+	if err != nil || s == string(n.val) {
+		return nil
+	}
+	return &Variant{
+		method:   "decode url encoded",
+		children: []*Node{N("key", []byte(s))},
 	}
 }
