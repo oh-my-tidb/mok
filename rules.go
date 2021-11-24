@@ -76,7 +76,7 @@ func DecodeRocksDBKey(n *Node) *Variant {
 }
 
 func DecodeTablePrefix(n *Node) *Variant {
-	if n.typ == "key" && len(n.val) == 9 && n.val[0] == 't' {
+	if n.typ == "key" && len(n.val) >= 9 && n.val[0] == 't' {
 		return &Variant{
 			method:   "table prefix",
 			children: []*Node{N("table_id", n.val[1:])},
@@ -86,10 +86,14 @@ func DecodeTablePrefix(n *Node) *Variant {
 }
 
 func DecodeTableRow(n *Node) *Variant {
-	if n.typ == "key" && len(n.val) == 19 && n.val[0] == 't' && n.val[9] == '_' && n.val[10] == 'r' {
+	if n.typ == "key" && len(n.val) >= 19 && n.val[0] == 't' && n.val[9] == '_' && n.val[10] == 'r' {
+		handleTyp := "index_values"
+		if remain, _, err := codec.DecodeInt(n.val[11:]); err == nil && len(remain) == 0 {
+			handleTyp = "row_id"
+		}
 		return &Variant{
 			method:   "table row key",
-			children: []*Node{N("table_id", n.val[1:9]), N("row_id", n.val[11:])},
+			children: []*Node{N("table_id", n.val[1:9]), N(handleTyp, n.val[11:])},
 		}
 	}
 	return nil
