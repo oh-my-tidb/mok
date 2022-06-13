@@ -12,18 +12,22 @@ import (
 
 type Rule func(*Node) *Variant
 
-var rules = []Rule{
-	DecodeHex,
-	DecodeComparableKey,
-	DecodeRocksDBKey,
-	DecodeTablePrefix,
-	DecodeTableRow,
-	DecodeTableIndex,
-	DecodeIndexValues,
-	DecodeLiteral,
-	DecodeBase64,
-	DecodeIntegerBytes,
-	DecodeURLEscaped,
+var rules []Rule
+
+func init() {
+	rules = []Rule{
+		DecodeHex,
+		DecodeComparableKey,
+		DecodeRocksDBKey,
+		DecodeTablePrefix,
+		DecodeTableRow,
+		DecodeTableIndex,
+		DecodeIndexValues,
+		DecodeLiteral,
+		DecodeBase64,
+		DecodeIntegerBytes,
+		DecodeURLEscaped,
+	}
 }
 
 func DecodeHex(n *Node) *Variant {
@@ -153,6 +157,11 @@ func DecodeBase64(n *Node) *Variant {
 	}
 	s, err := base64.StdEncoding.DecodeString(string(n.val))
 	if err != nil {
+		return nil
+	}
+	child := N("key", []byte(s))
+	child.Expand()
+	if len(child.variants) == 0 {
 		return nil
 	}
 	return &Variant{
