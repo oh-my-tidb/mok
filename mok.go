@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"strings"
@@ -37,6 +38,11 @@ func (n *Node) String() string {
 		default:
 			return fmt.Sprintf("%q", n.val)
 		}
+	case "keyspace_id":
+		tmp := []byte{'\x00'}
+		t := append(tmp, n.val...)
+		id := binary.BigEndian.Uint32(t)
+		return fmt.Sprintf("keyspace: %v", id)
 	case "table_id":
 		_, id, _ := codec.DecodeInt(n.val)
 		return fmt.Sprintf("table: %v", id)
