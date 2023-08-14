@@ -58,6 +58,12 @@ $ ./mok --table-id 43 --index-id 50 --index-value 81934
 built key: 7480000000000000FF2B5F698000000000FF0000328000000000FF01400E0000000000FA
 ```
 
+Build a key for a given record under given keyspace
+```
+$ ./mok --keyspace-id 255 --table-id 43 --row-value 81934
+built key: 780000FF74800000FF000000002B5F7280FF0000000001400E00FE
+```
+
 ## TODO
 
 - [x] build keys

@@ -19,6 +19,7 @@ func init() {
 		DecodeHex,
 		DecodeComparableKey,
 		DecodeRocksDBKey,
+		DecodeKeyspace,
 		DecodeTablePrefix,
 		DecodeTableRow,
 		DecodeTableIndex,
@@ -74,6 +75,16 @@ func DecodeRocksDBKey(n *Node) *Variant {
 		return &Variant{
 			method:   "decode rocksdb data key",
 			children: []*Node{N("key", n.val[1:])},
+		}
+	}
+	return nil
+}
+
+func DecodeKeyspace(n *Node) *Variant {
+	if n.typ == "key" && n.val[0] == 'x' && len(n.val) >= 4 {
+		return &Variant{
+			method:   "decode keyspace",
+			children: []*Node{N("keyspace_id", n.val[1:4]), N("key", n.val[4:])},
 		}
 	}
 	return nil

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/binary"
 	"encoding/hex"
 	"flag"
 	"fmt"
@@ -12,10 +13,25 @@ import (
 )
 
 var keyFormat = flag.String("format", "proto", "output format (go/hex/base64/proto)")
+var NullSpaceID = int64(0xffffffff)
+var keyspaceID = flag.Int64("keyspace-id", NullSpaceID, "keyspace ID")
 var tableID = flag.Int64("table-id", 0, "table ID")
 var indexID = flag.Int64("index-id", 0, "index ID")
 var rowValue = flag.String("row-value", "", "row value")
 var indexValue = flag.String("index-value", "", "index value")
+
+func getKeyPrefix(keyspaceID int64) ([]byte, error) {
+	if keyspaceID == NullSpaceID {
+		return []byte{'t'}, nil
+	}
+	if keyspaceID > 0xffffff {
+		return nil, fmt.Errorf("invalid keyspace value: %d", keyspaceID)
+	}
+	var prefix [4]byte
+	binary.BigEndian.PutUint32(prefix[:], uint32(keyspaceID))
+	prefix[0] = 'x'
+	return append(prefix[:], 't'), nil
+}
 
 func main() {
 	flag.Parse()
@@ -24,7 +40,12 @@ func main() {
 		n := N("key", []byte(flag.Arg(0)))
 		n.Expand().Print()
 	} else if flag.NArg() == 0 { // Build a key with given flags.
-		key := []byte{'t'}
+		key, err := getKeyPrefix(*keyspaceID)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+
 		key = codec.EncodeInt(key, *tableID)
 		if *tableID == 0 {
 			fmt.Println("table ID shouldn't be 0")
