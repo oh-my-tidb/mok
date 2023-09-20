@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"strings"
@@ -75,4 +76,53 @@ var indexTypeToString = map[byte]string{
 func GetTimeFromTS(ts uint64) time.Time {
 	ms := int64(ts >> 18)
 	return time.Unix(ms/1e3, (ms%1e3)*1e6)
+}
+
+type KeyMode byte
+
+const (
+	KeyModeTxn KeyMode = 'x'
+	KeyModeRaw KeyMode = 'r'
+)
+
+func IsValidKeyMode(b byte) bool {
+	return b == byte(KeyModeTxn) || b == byte(KeyModeRaw)
+}
+
+func IsRawKeyMode(b byte) bool {
+	return b == byte(KeyModeRaw)
+}
+
+func (k KeyMode) String() string {
+	switch k {
+	case KeyModeTxn:
+		return "txnkv"
+	case KeyModeRaw:
+		return "rawkv"
+	default:
+		return "other"
+	}
+}
+
+func FromStringToKeyMode(s string) *KeyMode {
+	var keyMode KeyMode
+	switch s {
+	case "txnkv":
+		keyMode = KeyModeTxn
+	case "rawkv":
+		keyMode = KeyModeRaw
+	default:
+	}
+	return &keyMode
+}
+
+func ParseRawKey(s string, format string) ([]byte, error) {
+	switch format {
+	case "hex":
+		return hex.DecodeString(s)
+	case "str": // for `s` with all characters printable.
+		return []byte(s), nil
+	default:
+		return nil, fmt.Errorf("invalid raw key format: %s", format)
+	}
 }

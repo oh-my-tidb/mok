@@ -27,7 +27,7 @@ func N(t string, v []byte) *Node {
 
 func (n *Node) String() string {
 	switch n.typ {
-	case "key", "index_values":
+	case "key", "raw_key", "index_values":
 		switch *keyFormat {
 		case "hex":
 			return `"` + strings.ToUpper(hex.EncodeToString(n.val)) + `"`
@@ -38,6 +38,8 @@ func (n *Node) String() string {
 		default:
 			return fmt.Sprintf("%q", n.val)
 		}
+	case "key_mode":
+		return fmt.Sprintf("key mode: %s", KeyMode(n.val[0]))
 	case "keyspace_id":
 		tmp := []byte{'\x00'}
 		t := append(tmp, n.val...)

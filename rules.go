@@ -81,10 +81,14 @@ func DecodeRocksDBKey(n *Node) *Variant {
 }
 
 func DecodeKeyspace(n *Node) *Variant {
-	if n.typ == "key" && n.val[0] == 'x' && len(n.val) >= 4 {
+	if n.typ == "key" && IsValidKeyMode(n.val[0]) && len(n.val) >= 4 {
+		keyType := "key"
+		if IsRawKeyMode(n.val[0]) {
+			keyType = "raw_key"
+		}
 		return &Variant{
 			method:   "decode keyspace",
-			children: []*Node{N("keyspace_id", n.val[1:4]), N("key", n.val[4:])},
+			children: []*Node{N("key_mode", n.val[0:1]), N("keyspace_id", n.val[1:4]), N(keyType, n.val[4:])},
 		}
 	}
 	return nil
