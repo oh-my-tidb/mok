@@ -64,6 +64,15 @@ $ ./mok --keyspace-id 255 --table-id 43 --row-value 81934
 built key: 780000FF74800000FF000000002B5F7280FF0000000001400E00FE
 ```
 
+Build a RawKV key for a given raw key under given keyspace
+```
+$ ./mok --keyspace-id 0 --key-mode rawkv --raw-key test
+built key: 7200000074657374FF0000000000000000F7
+
+$ ./mok --keyspace-id 1 --key-mode rawkv --raw-key ''
+built key: 7200000100000000FB
+```
+
 ## TODO
 
 - [x] build keys
